@@ -19,6 +19,6 @@ Make an application with CRUD (Create, Read, Update Delete + list data) function
 - [ ] Save data in DB
 - [ ] Save files in file storage
 - [ ] Add a background process
-- [ ] Make data validation in create and put operations (make sure 4 different types used)
+- [?] Make data validation in create and put operations (make sure 4 different types used)
 - [ ] Host app on PaaS
 - [ ] Make architectural drawing
