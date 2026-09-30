@@ -15,7 +15,7 @@ Make an application with CRUD (Create, Read, Update Delete + list data) function
 
 ## To-Do
 - [x] Create API
-- [ ] Create frontend
+- [x] Create frontend
 - [ ] Save data in DB
 - [ ] Save files in file storage
 - [ ] Add a background process

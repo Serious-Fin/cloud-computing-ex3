@@ -1,0 +1,128 @@
+/* Still a plain-looking page - just a bit of colour and spacing. */
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #222;
+  background: #f4f5f7;
+  line-height: 1.4;
+  margin: 0 auto;
+  padding: 24px;
+  max-width: 900px;
+}
+
+h1 {
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 8px;
+}
+
+h2 {
+  margin-top: 28px;
+}
+
+/* Highlighted when empty, so an empty "#errors" paragraph takes no space. */
+#errors:not(:empty) {
+  color: #a33;
+  background: #fdecea;
+  border: 1px solid #f0b7b1;
+  border-radius: 4px;
+  padding: 8px 10px;
+  white-space: pre-line;
+}
+
+#message {
+  font-weight: bold;
+}
+
+/* --- Form ---------------------------------------------------------------- */
+
+#tire-form {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 16px;
+  max-width: 420px;
+}
+
+#tire-form label {
+  font-weight: bold;
+}
+
+input,
+select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  margin-top: 2px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+}
+
+/* --- Buttons ------------------------------------------------------------- */
+
+button {
+  background: #2f6fb3;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #255a91;
+}
+
+/* The second button in the "Actions" cell is the Delete button. */
+#tire-table-body td:last-child button + button {
+  background: #b3412f;
+}
+
+#tire-table-body td:last-child button + button:hover {
+  background: #8f3324;
+}
+
+/* --- Table --------------------------------------------------------------- */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #ddd;
+}
+
+th,
+td {
+  padding: 6px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+th {
+  background: #eaecef;
+  border-bottom: 2px solid #ccc;
+}
+
+tbody tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+tbody tr:hover {
+  background: #eef4fb;
+}
+
+td:last-child {
+  white-space: nowrap;
+}
+
+td:last-child button + button {
+  margin-left: 6px;
+}
+
+img {
+  max-height: 50px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  vertical-align: middle;
+}
