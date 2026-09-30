@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApiDb>(opt => opt.UseInMemoryDatabase("TireList"));
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
 var app = builder.Build();
 
@@ -23,7 +26,9 @@ static Dictionary<string, string[]> ValidateTire(Tire tire)
         errors["Brand"] = ["Brand must be between 2 and 50 characters."];
 
     // 2) enum: Type
-    if (!Enum.IsDefined(tire.Type))
+    if (tire.Type is not TireType type)
+        errors["Type"] = ["Type is required. Allowed values: Summer, Winter, AllSeason."];
+    else if (!Enum.IsDefined(type))
         errors["Type"] = ["Type must be one of: Summer, Winter, AllSeason."];
 
     // 3) int: RimDiameter
