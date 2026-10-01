@@ -67,6 +67,13 @@ build works locally and on Render — only the value differs:
 `__` is how .NET represents `:` in environment variable names, so
 `ConnectionStrings__Default` maps to `ConnectionStrings:Default`.
 
+The API accepts both Npgsql keyword connection strings and `postgres://` or
+`postgresql://` URLs. `api/DatabaseConnection.cs` converts URLs before passing them
+to Npgsql, including decoding credentials, defaulting the port to 5432, and honoring
+an optional `sslmode` query parameter. Other URL query parameters are rejected.
+
+Run the connection-format checks with `dotnet run --project tests/ConnectionChecks`.
+
 ### Migrations
 
 Migrations live in `api/Migrations` and are applied automatically at start-up
@@ -123,10 +130,9 @@ Worth knowing:
 3. Set `ConnectionStrings__Default` on the API service (**Environment** page) to the
    **internal** URL.
 
-PostgreSQL is not an HTTP/HTTPS service: it is the PostgreSQL wire protocol over TCP
-port 5432 with TLS, which Npgsql handles. Render displays both a `postgresql://` URI and
-the individual host/database/user/password fields; Npgsql expects the keyword form, so
-build it from the fields:
+Paste Render's PostgreSQL URL directly into the environment variable; the API
+converts it to Npgsql's keyword format. For an external connection, use
+`?sslmode=require` to require TLS. You can also supply the keyword form:
 
 ```
 Host=<host>;Port=5432;Database=<database>;Username=<user>;Password=<password>;SSL Mode=Require

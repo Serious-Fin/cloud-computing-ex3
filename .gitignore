@@ -1,2 +1,2 @@
-api/bin
-api/obj
+**/bin/
+**/obj/
