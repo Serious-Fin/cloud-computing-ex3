@@ -4,19 +4,25 @@ Plain HTML/CSS/JavaScript page (no build step, no frameworks) that uses the `api
 
 ## Run it
 
-1. Start the API (from the `api` folder):
+1. Start the database (from the repository root):
+
+   ```
+   docker compose up -d
+   ```
+
+2. Start the API (from the `api` folder):
 
    ```
    dotnet run --launch-profile http
    ```
 
-   It listens on `http://localhost:5016`.
+   It listens on `http://localhost:5016` and applies pending migrations on start-up.
 
-2. Open `index.html` in a browser. Any of these works:
+3. Open `index.html` in a browser. Any of these works:
    - Double-click `frontend/index.html` (opens as a `file://` page).
    - Or serve the folder with any static file server, e.g. VS Code's Live Server extension.
 
-3. If the API runs on a different address, change `API_BASE` at the top of `app.js`.
+4. If the API runs on a different address, change `API_BASE` at the top of `app.js`.
 
 ## What it does
 

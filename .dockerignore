@@ -1,0 +1,5 @@
+# Keep build output and VCS data out of the image build context.
+**/bin
+**/obj
+.git
+.gitignore

@@ -1,0 +1,30 @@
+# Render Blueprint. Apply it from the Render Dashboard: New -> Blueprint.
+# https://render.com/docs/blueprint-spec
+services:
+  # Public API. Render has no native .NET runtime, so it is built from a Dockerfile.
+  - type: web
+    name: cloud-computing-ex3-api
+    runtime: docker
+    dockerfilePath: ./api/Dockerfile
+    dockerContext: .
+    plan: free
+    # Must match the database region for the internal connection string to resolve.
+    region: frankfurt
+    envVars:
+      # .NET maps "__" to ":", so this feeds ConnectionStrings:Default in Program.cs.
+      - key: ConnectionStrings__Default
+        fromDatabase:
+          name: cloud-computing-ex3-db
+          property: connectionString # the internal URL
+
+  # Web application: plain HTML/CSS/JS, served from Render's CDN, no build step.
+  - type: web
+    name: cloud-computing-ex3-web
+    runtime: static
+    staticPublishPath: ./frontend
+
+databases:
+  - name: cloud-computing-ex3-db
+    databaseName: tires
+    plan: free
+    region: frankfurt

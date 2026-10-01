@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<ApiDb>(opt => opt.UseInMemoryDatabase("TireList"));
+builder.Services.AddDbContext<ApiDb>(opt =>
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
@@ -14,6 +15,12 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
+
+// Apply pending migrations so a fresh database (for example on Render) works on first start.
+using (var scope = app.Services.CreateScope())
+{
+    await scope.ServiceProvider.GetRequiredService<ApiDb>().Database.MigrateAsync();
+}
 
 app.UseCors();
 

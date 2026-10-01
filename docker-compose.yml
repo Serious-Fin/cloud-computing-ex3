@@ -1,0 +1,23 @@
+# Local development database. Start it with: docker compose up -d
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: tires-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tires
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      # 5433 on the host so this does not clash with a PostgreSQL already installed on 5432.
+      - "5433:5432"
+    volumes:
+      - tires-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tires"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  tires-db-data:

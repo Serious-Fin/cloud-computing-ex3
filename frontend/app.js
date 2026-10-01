@@ -1,8 +1,15 @@
 // Simple frontend for the Tire API (create, read, update, delete + list).
 // Uses plain fetch() and direct DOM updates - no frameworks.
 
-// Base URL of the API. Change this if the API runs on another address.
-const API_BASE = "http://localhost:5016";
+// Base URL of the API: the local API when the page is opened locally, the deployed API
+// otherwise. If Render had to give the API service a different hostname than the one in
+// render.yaml, change the deployed URL here.
+const API_BASE =
+  location.protocol === "file:" ||
+  location.hostname === "localhost" ||
+  location.hostname === "127.0.0.1"
+    ? "http://localhost:5016"
+    : "https://cloud-computing-ex3-api.onrender.com";
 
 // --- Element references -----------------------------------------------------
 
