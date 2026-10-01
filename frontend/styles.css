@@ -1,5 +1,3 @@
-/* Still a plain-looking page - just a bit of colour and spacing. */
-
 body {
   font-family: Arial, Helvetica, sans-serif;
   color: #222;
@@ -19,7 +17,6 @@ h2 {
   margin-top: 28px;
 }
 
-/* Highlighted when empty, so an empty "#errors" paragraph takes no space. */
 #errors:not(:empty) {
   color: #a33;
   background: #fdecea;
@@ -32,8 +29,6 @@ h2 {
 #message {
   font-weight: bold;
 }
-
-/* --- Form ---------------------------------------------------------------- */
 
 #tire-form {
   background: #fff;
@@ -57,8 +52,6 @@ select {
   border-radius: 4px;
 }
 
-/* --- Buttons ------------------------------------------------------------- */
-
 button {
   background: #2f6fb3;
   color: #fff;
@@ -73,7 +66,6 @@ button:hover {
   background: #255a91;
 }
 
-/* The second button in the "Actions" cell is the Delete button. */
 #tire-table-body td:last-child button + button {
   background: #b3412f;
 }
@@ -81,8 +73,6 @@ button:hover {
 #tire-table-body td:last-child button + button:hover {
   background: #8f3324;
 }
-
-/* --- Table --------------------------------------------------------------- */
 
 table {
   border-collapse: collapse;

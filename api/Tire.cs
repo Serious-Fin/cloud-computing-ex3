@@ -12,5 +12,5 @@ public class Tire
     public TireType? Type { get; set; }
     public int RimDiameter { get; set; }
     public decimal Price { get; set; }
-    public string? ImageUrl { get; set; } 
+    public string? ImageUrl { get; set; }
 }

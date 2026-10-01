@@ -9,13 +9,12 @@ GET {{api_HostAddress}}/tires/1
 Accept: application/json
 
 ### Create a tire
-# Type: 0 = Summer, 1 = Winter, 2 = AllSeason (numeric enum values)
 POST {{api_HostAddress}}/tires
 Content-Type: application/json
 
 {
   "brand": "Michelin",
-  "type": 2,
+  "type": "AllSeason",
   "rimDiameter": 17,
   "price": 129.99,
   "imageUrl": "https://example.com/michelin.png"
@@ -27,7 +26,7 @@ Content-Type: application/json
 
 {
   "brand": "Continental",
-  "type": 1,
+  "type": "Winter",
   "rimDiameter": 18,
   "price": 159.50,
   "imageUrl": "https://example.com/continental.png"

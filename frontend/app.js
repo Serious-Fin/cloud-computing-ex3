@@ -1,17 +1,10 @@
-// Simple frontend for the Tire API (create, read, update, delete + list).
-// Uses plain fetch() and direct DOM updates - no frameworks.
-
-// Base URL of the API: the local API when the page is opened locally, the deployed API
-// otherwise. If Render had to give the API service a different hostname than the one in
-// render.yaml, change the deployed URL here.
+// Update the deployed URL if Render assigns a different API hostname.
 const API_BASE =
   location.protocol === "file:" ||
   location.hostname === "localhost" ||
   location.hostname === "127.0.0.1"
     ? "http://localhost:5016"
     : "https://cloud-computing-ex3-api.onrender.com";
-
-// --- Element references -----------------------------------------------------
 
 const apiBaseSpan = document.getElementById("api-base");
 const messageEl = document.getElementById("message");
@@ -23,12 +16,8 @@ const cancelButton = document.getElementById("cancel-button");
 const refreshButton = document.getElementById("refresh-button");
 const tableBody = document.getElementById("tire-table-body");
 
-// --- State ------------------------------------------------------------------
-
-const tires = []; // local copy of the tires fetched from the API
-let editingId = null; // null = "add" mode, otherwise the id being edited
-
-// --- Start-up ---------------------------------------------------------------
+let tires = [];
+let editingId = null;
 
 apiBaseSpan.textContent = API_BASE;
 formEl.addEventListener("submit", onSubmitForm);
@@ -36,8 +25,6 @@ cancelButton.addEventListener("click", cancelEdit);
 refreshButton.addEventListener("click", loadTires);
 
 loadTires();
-
-// --- API calls --------------------------------------------------------------
 
 async function loadTires() {
   clearMessage();
@@ -48,11 +35,9 @@ async function loadTires() {
       return;
     }
 
-    const data = await response.json();
-    tires.length = 0;
-    tires.push(...data);
+    tires = await response.json();
     renderTires();
-  } catch (error) {
+  } catch {
     showMessage("Could not reach the API. Is it running on " + API_BASE + "?");
   }
 }
@@ -75,7 +60,7 @@ async function onSubmitForm(event) {
 
   try {
     const response = await fetch(url, {
-      method: method,
+      method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(tire),
     });
@@ -88,7 +73,7 @@ async function onSubmitForm(event) {
     cancelEdit();
     await loadTires();
     showMessage(isEdit ? "Tire updated." : "Tire created.");
-  } catch (error) {
+  } catch {
     showMessage("Request failed. Is the API running?");
   }
 }
@@ -107,12 +92,10 @@ async function deleteTire(id) {
     }
     await loadTires();
     showMessage("Tire deleted.");
-  } catch (error) {
+  } catch {
     showMessage("Request failed. Is the API running?");
   }
 }
-
-// --- Form mode (add vs. edit) ----------------------------------------------
 
 function startEdit(id) {
   const tire = tires.find((t) => t.id === id);
@@ -130,7 +113,6 @@ function startEdit(id) {
   submitButton.textContent = "Save";
   cancelButton.hidden = false;
   clearMessage();
-  errorsEl.textContent = "";
 }
 
 function cancelEdit() {
@@ -139,11 +121,8 @@ function cancelEdit() {
   formTitleEl.textContent = "Add a tire";
   submitButton.textContent = "Add";
   cancelButton.hidden = true;
-  errorsEl.textContent = "";
   clearMessage();
 }
-
-// --- Rendering --------------------------------------------------------------
 
 function renderTires() {
   tableBody.innerHTML = "";
@@ -165,7 +144,6 @@ function renderTires() {
     row.insertCell().textContent = tire.rimDiameter;
     row.insertCell().textContent = tire.price;
 
-    // Image column: a link plus a small preview.
     const imageCell = row.insertCell();
     const link = document.createElement("a");
     link.href = tire.imageUrl;
@@ -179,7 +157,6 @@ function renderTires() {
     image.alt = tire.brand ?? "tire";
     imageCell.appendChild(image);
 
-    // Actions column: edit + delete.
     const actionsCell = row.insertCell();
 
     const editButton = document.createElement("button");
@@ -194,9 +171,6 @@ function renderTires() {
   }
 }
 
-// --- Small helpers ----------------------------------------------------------
-
-// Shows validation errors returned by the API (RFC 9457 problem details).
 async function showApiErrors(response) {
   errorsEl.textContent = "";
 
@@ -205,7 +179,7 @@ async function showApiErrors(response) {
   let problem = null;
   try {
     problem = JSON.parse(text);
-  } catch (error) {
+  } catch {
     // The body was not JSON (for example a plain 400 from model binding).
   }
 
