@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = DatabaseConnection.Normalize(
@@ -11,6 +12,18 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<R2Storage>();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    // One shared allowance for all callers, including image replacements.
+    options.AddPolicy("tire-writes", context => RateLimitPartition.GetFixedWindowLimiter(
+        "all-callers", _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 100,
+            Window = TimeSpan.FromDays(1),
+            QueueLimit = 0
+        }));
+});
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 6 * 1024 * 1024);
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options => options.MultipartBodyLengthLimit = 6 * 1024 * 1024);
 builder.Services.AddOptions<TireViewsOptions>()
@@ -34,6 +47,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseCors();
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {
@@ -51,14 +65,16 @@ app.MapGet("/tires/{id}", async (int id, ApiDb db) =>
             : Results.NotFound());
 
 app.MapPost("/tires", (HttpRequest request, ApiDb db, R2Storage storage,
-    ILoggerFactory loggerFactory, CancellationToken cancellationToken) =>
-    TireUploadEndpoints.SaveAsync(null, request, db, storage, loggerFactory, cancellationToken))
+    ILoggerFactory loggerFactory, IConfiguration configuration, CancellationToken cancellationToken) =>
+    TireUploadEndpoints.SaveAsync(null, request, db, storage, loggerFactory, configuration, cancellationToken))
+    .RequireRateLimiting("tire-writes")
     .Accepts<IFormFile>("multipart/form-data")
     .ProducesValidationProblem();
 
 app.MapPut("/tires/{id}", (int id, HttpRequest request, ApiDb db, R2Storage storage,
-    ILoggerFactory loggerFactory, CancellationToken cancellationToken) =>
-    TireUploadEndpoints.SaveAsync(id, request, db, storage, loggerFactory, cancellationToken))
+    ILoggerFactory loggerFactory, IConfiguration configuration, CancellationToken cancellationToken) =>
+    TireUploadEndpoints.SaveAsync(id, request, db, storage, loggerFactory, configuration, cancellationToken))
+    .RequireRateLimiting("tire-writes")
     .Accepts<IFormFile>("multipart/form-data")
     .ProducesValidationProblem();
 app.MapDelete("/tires/{id}", async (int id, ApiDb db, R2Storage storage) =>

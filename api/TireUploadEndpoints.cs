@@ -3,8 +3,12 @@ using Microsoft.EntityFrameworkCore;
 internal static class TireUploadEndpoints
 {
     public static async Task<IResult> SaveAsync(int? id, HttpRequest request, ApiDb db,
-        R2Storage storage, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
+        R2Storage storage, ILoggerFactory loggerFactory, IConfiguration configuration,
+        CancellationToken cancellationToken)
     {
+        if (!configuration.GetValue("Uploads:Enabled", true))
+            return Results.Problem("Uploads are disabled for this demo.", statusCode: 503);
+
         if (request.ContentType is null || !request.ContentType.StartsWith("multipart/form-data", StringComparison.OrdinalIgnoreCase))
             return Results.Problem("Send tire fields and an image as multipart/form-data.", statusCode: 415);
 

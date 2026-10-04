@@ -214,6 +214,18 @@ if you want to keep local and deployed uploads apart.
 
 ### Upload behavior and verification
 
+The API allows 100 POST/PUT requests combined per 24-hour window, shared by all
+callers. Excess requests return HTTP 429 before reading the upload or contacting
+R2. Invalid requests and edits without an image also count. The allowance is held
+in memory and resets on API restart/redeploy; multiple API instances each have
+their own allowance. This limits demo abuse but is not a persistent billing cap.
+Each accepted image is still limited to 5 MiB.
+
+To disable create/update requests between demos, set `Uploads__Enabled` to `false`
+in the Render API service's Environment settings and redeploy. Remove it or set it
+to `true` for the demo. Reads and deletes remain available. The API is public, so
+other people can still edit/delete demo data or consume the shared allowance.
+
 - `POST /tires`: multipart fields `brand`, `type`, `rimDiameter`, `price`, and an
   `image` file are required. JSON requests are no longer accepted for create/update.
 - `PUT /tires/{id}`: the same four fields are required; omit `image` to keep the
