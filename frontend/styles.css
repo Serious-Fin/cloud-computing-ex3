@@ -109,8 +109,20 @@ td:last-child button + button {
   margin-left: 6px;
 }
 
-img {
-  max-height: 50px;
+.image-column {
+  width: 180px;
+  text-align: center;
+}
+
+.views-column {
+  width: 100px;
+  text-align: center;
+}
+
+.image-column img {
+  width: 180px;
+  height: 140px;
+  object-fit: contain;
   border: 1px solid #ddd;
   border-radius: 4px;
   background: #fff;

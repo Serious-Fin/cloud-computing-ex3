@@ -155,19 +155,20 @@ function renderTires() {
     row.insertCell().textContent = tire.price;
 
     const imageCell = row.insertCell();
+    imageCell.className = "image-column";
     const link = document.createElement("a");
     link.href = tire.imageUrl;
     link.target = "_blank";
     link.rel = "noopener";
-    link.textContent = "image";
-    imageCell.appendChild(link);
-    imageCell.appendChild(document.createElement("br"));
+    link.title = "Open full-size image";
     const image = document.createElement("img");
     image.src = tire.imageUrl;
     image.alt = tire.brand ?? "tire";
-    imageCell.appendChild(image);
+    link.appendChild(image);
+    imageCell.appendChild(link);
 
     const viewsCell = row.insertCell();
+    viewsCell.className = "views-column";
     viewsCell.textContent = tire.viewsUpdatedAt ? tire.viewsLastHour : "Pending update";
     if (tire.viewsUpdatedAt) {
       viewsCell.title = "Last updated: " + new Date(tire.viewsUpdatedAt).toLocaleString();
