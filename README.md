@@ -141,12 +141,32 @@ Host=<host>;Port=5432;Database=<database>;Username=<user>;Password=<password>;SS
 A Free Postgres instance holds 1 GB and has no backups. `fromDatabase` with
 `property: connectionString` (as used in `render.yaml`) yields the internal URL.
 
+## Background operation
+
+`api/TireViewsWorker.cs` is an ASP.NET Core `BackgroundService` hosted inside the
+API. It replaces each tire's simulated last-hour view count with a random number
+from 0 to 50 on startup and every 60 minutes, saving the count and UTC update time
+in PostgreSQL. The frontend shows these statistics; press **Refresh** to fetch
+the latest values. These are demo statistics, not actual visitor tracking or a
+rolling one-hour measurement. New tires show **Pending update** until the next run.
+
+The database migration is applied automatically on API startup. No additional
+Render service is needed. The worker pauses when the free API sleeps and runs
+again when it wakes. Each run logs the number of updated tires; failures are
+logged and retried at the next interval.
+
+For a lecture demo, set the Render environment variable
+`TireViews__IntervalMinutes` to `1` (or change `TireViews:IntervalMinutes` in
+`api/appsettings.json` locally). Restart/redeploy after changing it. The interval
+must be between 0.01 and 1440 minutes; the default is 60. Keep the page active and
+press **Refresh** after a minute to see the persisted update.
+
 ## To-Do
 - [x] Create API
 - [x] Create frontend
 - [x] Save data in DB
 - [ ] Save files in file storage
-- [ ] Add a background process
+- [x] Add a background process
 - [x] Make data validation in create and put operations (5 types: string, enum, int, decimal, URL)
-- [ ] Host app on PaaS
+- [x] Host app on PaaS
 - [ ] Make architectural drawing

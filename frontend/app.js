@@ -130,7 +130,7 @@ function renderTires() {
   if (tires.length === 0) {
     const row = tableBody.insertRow();
     const cell = row.insertCell();
-    cell.colSpan = 7;
+    cell.colSpan = 8;
     cell.textContent = "No tires yet.";
     return;
   }
@@ -156,6 +156,12 @@ function renderTires() {
     image.src = tire.imageUrl;
     image.alt = tire.brand ?? "tire";
     imageCell.appendChild(image);
+
+    const viewsCell = row.insertCell();
+    viewsCell.textContent = tire.viewsUpdatedAt ? tire.viewsLastHour : "Pending update";
+    if (tire.viewsUpdatedAt) {
+      viewsCell.title = "Last updated: " + new Date(tire.viewsUpdatedAt).toLocaleString();
+    }
 
     const actionsCell = row.insertCell();
 

@@ -10,6 +10,13 @@ builder.Services.AddDbContext<ApiDb>(opt =>
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
+builder.Services.AddOptions<TireViewsOptions>()
+    .BindConfiguration("TireViews")
+    .Validate(options => double.IsFinite(options.IntervalMinutes) &&
+        options.IntervalMinutes >= 0.01 && options.IntervalMinutes <= 1440,
+        "TireViews:IntervalMinutes must be between 0.01 and 1440.")
+    .ValidateOnStart();
+builder.Services.AddHostedService<TireViewsWorker>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
@@ -45,6 +52,9 @@ app.MapPost("/tires", async (Tire tire, ApiDb db) =>
     var errors = TireValidator.Validate(tire);
     if (errors.Count > 0) return Results.ValidationProblem(errors);
 
+    // View statistics are maintained by the worker, not supplied by API clients.
+    tire.ViewsLastHour = 0;
+    tire.ViewsUpdatedAt = null;
     db.Tires.Add(tire);
     await db.SaveChangesAsync();
 

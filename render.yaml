@@ -11,6 +11,8 @@ services:
     # Must match the database region for the internal connection string to resolve.
     region: frankfurt
     envVars:
+      - key: TireViews__IntervalMinutes
+        value: "1"
       # .NET maps "__" to ":", so this feeds ConnectionStrings:Default in Program.cs.
       - key: ConnectionStrings__Default
         fromDatabase:
