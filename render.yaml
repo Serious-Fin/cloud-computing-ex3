@@ -11,6 +11,17 @@ services:
     # Must match the database region for the internal connection string to resolve.
     region: frankfurt
     envVars:
+      # Enter these in Render; credentials must never be committed.
+      - key: R2__Endpoint
+        sync: false
+      - key: R2__BucketName
+        value: tire-images
+      - key: R2__PublicBaseUrl
+        sync: false
+      - key: R2__AccessKeyId
+        sync: false
+      - key: R2__SecretAccessKey
+        sync: false
       - key: TireViews__IntervalMinutes
         value: "1"
       # .NET maps "__" to ":", so this feeds ConnectionStrings:Default in Program.cs.

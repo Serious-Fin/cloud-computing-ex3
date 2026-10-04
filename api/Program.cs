@@ -10,6 +10,9 @@ builder.Services.AddDbContext<ApiDb>(opt =>
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<R2Storage>();
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 6 * 1024 * 1024);
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options => options.MultipartBodyLengthLimit = 6 * 1024 * 1024);
 builder.Services.AddOptions<TireViewsOptions>()
     .BindConfiguration("TireViews")
     .Validate(options => double.IsFinite(options.IntervalMinutes) &&
@@ -47,48 +50,24 @@ app.MapGet("/tires/{id}", async (int id, ApiDb db) =>
             ? Results.Ok(tire)
             : Results.NotFound());
 
-app.MapPost("/tires", async (Tire tire, ApiDb db) =>
-{
-    var errors = TireValidator.Validate(tire);
-    if (errors.Count > 0) return Results.ValidationProblem(errors);
+app.MapPost("/tires", (HttpRequest request, ApiDb db, R2Storage storage,
+    ILoggerFactory loggerFactory, CancellationToken cancellationToken) =>
+    TireUploadEndpoints.SaveAsync(null, request, db, storage, loggerFactory, cancellationToken))
+    .Accepts<IFormFile>("multipart/form-data")
+    .ProducesValidationProblem();
 
-    // View statistics are maintained by the worker, not supplied by API clients.
-    tire.ViewsLastHour = 0;
-    tire.ViewsUpdatedAt = null;
-    db.Tires.Add(tire);
-    await db.SaveChangesAsync();
-
-    return Results.Created($"/tires/{tire.Id}", tire);
-})
-.ProducesValidationProblem();
-
-app.MapPut("/tires/{id}", async (int id, Tire inputTire, ApiDb db) =>
-{
-    var errors = TireValidator.Validate(inputTire);
-    if (errors.Count > 0) return Results.ValidationProblem(errors);
-
-    var tire = await db.Tires.FindAsync(id);
-
-    if (tire is null) return Results.NotFound();
-
-    tire.Brand = inputTire.Brand;
-    tire.Type = inputTire.Type;
-    tire.RimDiameter = inputTire.RimDiameter;
-    tire.Price = inputTire.Price;
-    tire.ImageUrl = inputTire.ImageUrl;
-
-    await db.SaveChangesAsync();
-
-    return Results.NoContent();
-})
-.ProducesValidationProblem();
-
-app.MapDelete("/tires/{id}", async (int id, ApiDb db) =>
+app.MapPut("/tires/{id}", (int id, HttpRequest request, ApiDb db, R2Storage storage,
+    ILoggerFactory loggerFactory, CancellationToken cancellationToken) =>
+    TireUploadEndpoints.SaveAsync(id, request, db, storage, loggerFactory, cancellationToken))
+    .Accepts<IFormFile>("multipart/form-data")
+    .ProducesValidationProblem();
+app.MapDelete("/tires/{id}", async (int id, ApiDb db, R2Storage storage) =>
 {
     if (await db.Tires.FindAsync(id) is Tire tire)
     {
         db.Tires.Remove(tire);
         await db.SaveChangesAsync();
+        await storage.DeleteBestEffortAsync(tire.ImageKey);
         return Results.NoContent();
     }
 

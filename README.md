@@ -48,8 +48,9 @@ Make an application with CRUD (Create, Read, Update Delete + list data) function
 | Update tire | `PUT /tires/{id}` |
 | Delete tire | `DELETE /tires/{id}` |
 
-Create and update validate brand, tire type, rim diameter, price, and image URL in
-`api/TireValidator.cs`. The frontend displays validation errors under the form.
+Create and update accept multipart form data and validate brand, tire type, rim diameter, and price in
+`api/TireValidator.cs`. Image uploads validate file size and JPEG/PNG/WebP signatures in
+`api/ImageUpload.cs`. The frontend displays validation errors under the form.
 Example requests are in `api/api.http`; interactive API documentation is available
 at `/scalar` when running in Development.
 
@@ -161,12 +162,96 @@ For a lecture demo, set the Render environment variable
 must be between 0.01 and 1440 minutes; the default is 60. Keep the page active and
 press **Refresh** after a minute to see the persisted update.
 
+## File storage: Cloudflare R2
+
+Images are uploaded by the API to R2 Standard storage. PostgreSQL stores the public
+`ImageUrl` and an internal `ImageKey` for cleanup. Browser credentials are never
+needed: the browser sends multipart form data to Render, and the API uploads to R2
+using its S3-compatible API. No R2 Worker, server, or R2 YAML deployment is needed.
+The Render Blueprint only configures the API; it does not create Cloudflare resources.
+
+### One-time Cloudflare setup
+
+1. In the Cloudflare dashboard, activate **R2 Object Storage**. Complete any billing
+   activation requested by Cloudflare. Standard storage has a monthly free allowance;
+   usage above that allowance is billable. See [R2 pricing](https://developers.cloudflare.com/r2/pricing/).
+2. Create a bucket named `tire-images`, using **Standard** storage. You can choose an
+   EU jurisdiction; use the S3 endpoint shown by Cloudflare for your chosen bucket.
+3. Open the bucket's **Settings**, enable **Public Development URL**, and copy the
+   `https://pub-....r2.dev` URL. This makes the uploaded demo images publicly readable.
+   The supplied URL is rate-limited and intended for development. For production,
+   connect a custom domain instead. See [public bucket setup](https://developers.cloudflare.com/r2/buckets/public-buckets/).
+4. From R2's API-token management, create an **Object Read & Write** token scoped
+   only to `tire-images`. Save the generated **Access Key ID**, **Secret Access Key**,
+   and **S3 endpoint**. Use those S3 credentials, not the Cloudflare management token.
+   See [R2 API tokens](https://developers.cloudflare.com/r2/api/tokens/).
+
+Bucket writes stay authenticated. No bucket CORS configuration is needed for this
+flow because uploads go through the API and the frontend displays images with `<img>`.
+
+### Configure Render
+
+On the existing **API service**, open **Environment** and add all five variables:
+
+| Variable | Value |
+| --- | --- |
+| `R2__Endpoint` | S3 endpoint copied from Cloudflare (usually `https://<account-id>.r2.cloudflarestorage.com`; EU buckets may differ) |
+| `R2__BucketName` | `tire-images` |
+| `R2__PublicBaseUrl` | Public `https://pub-....r2.dev` URL, or your custom image domain |
+| `R2__AccessKeyId` | Generated Access Key ID |
+| `R2__SecretAccessKey` | Generated Secret Access Key |
+
+Save the environment settings and redeploy the API and static site with this code.
+The database migration runs automatically. For a new Blueprint, `render.yaml`
+provides the bucket name and prompts for the other values via `sync: false`.
+Do not place credentials in the frontend, repository, or README.
+Without valid storage configuration, uploads return HTTP 503 with an explanatory
+message; listing and editing a tire without replacing its image still work.
+
+For local development, set these same environment variables in the terminal before
+running `dotnet run --launch-profile http` from `api`. Use a separate demo bucket
+if you want to keep local and deployed uploads apart.
+
+### Upload behavior and verification
+
+- `POST /tires`: multipart fields `brand`, `type`, `rimDiameter`, `price`, and an
+  `image` file are required. JSON requests are no longer accepted for create/update.
+- `PUT /tires/{id}`: the same four fields are required; omit `image` to keep the
+  current image, or supply a file to replace it. The API generates URLs itself.
+- Files must be nonempty JPEG, PNG, or WebP, at most 5 MiB. The API checks magic bytes,
+  not just the filename or browser-supplied content type. It does not fully decode
+  images. The overall HTTP request limit is 6 MiB, including multipart overhead.
+- Each image gets a unique key. After a successful replacement or deletion, the API
+  attempts to remove the old object. A failed database save attempts to remove the
+  new object. Cleanup errors are logged; failed cleanup can leave an orphan requiring
+  manual deletion from R2. Database and object storage are not one atomic transaction.
+- Existing external image links remain valid and are never deleted from their provider.
+
+Run validation checks with `dotnet run --project tests/UploadChecks`.
+Run frontend upload checks with `node tests/UploadChecks/frontend-checks.cjs`.
+After configuring R2, use the page to create a tire with an image, refresh to check
+persistence, edit without a file, replace the image, and delete the tire. Check the
+bucket to confirm replacement/deletion cleanup. Try a file above 5 MiB and a text
+file renamed `.png` to confirm rejection. Your current public CRUD API also permits
+public uploads; access control would be needed before opening it beyond the demo.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Browser[Browser] --> Web[Render static frontend]
+    Browser -->|CRUD and multipart image upload| API[Render ASP.NET API]
+    API -->|Tire data and image URL/key| DB[(Render PostgreSQL)]
+    API -->|Authenticated upload/delete| R2[(Cloudflare R2)]
+    Browser -->|Public image URL| R2
+    Worker[BackgroundService inside API] -->|Update simulated views| DB
+```
 ## To-Do
 - [x] Create API
 - [x] Create frontend
 - [x] Save data in DB
-- [ ] Save files in file storage
+- [x] Save files in file storage (R2 integration; configure the bucket before deployment)
 - [x] Add a background process
-- [x] Make data validation in create and put operations (5 types: string, enum, int, decimal, URL)
+- [x] Make data validation in create and put operations (string, enum, int, decimal, plus image validation)
 - [x] Host app on PaaS
-- [ ] Make architectural drawing
+- [x] Make architectural drawing

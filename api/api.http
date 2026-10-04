@@ -8,29 +8,53 @@ Accept: application/json
 GET {{api_HostAddress}}/tires/1
 Accept: application/json
 
-### Create a tire
+### Create a tire (place a JPEG at api/tire.jpg before sending)
 POST {{api_HostAddress}}/tires
-Content-Type: application/json
+Content-Type: multipart/form-data; boundary=tire-boundary
 
-{
-  "brand": "Michelin",
-  "type": "AllSeason",
-  "rimDiameter": 17,
-  "price": 129.99,
-  "imageUrl": "https://example.com/michelin.png"
-}
+--tire-boundary
+Content-Disposition: form-data; name="brand"
 
-### Update a tire
+Michelin
+--tire-boundary
+Content-Disposition: form-data; name="type"
+
+AllSeason
+--tire-boundary
+Content-Disposition: form-data; name="rimDiameter"
+
+17
+--tire-boundary
+Content-Disposition: form-data; name="price"
+
+129.99
+--tire-boundary
+Content-Disposition: form-data; name="image"; filename="tire.jpg"
+Content-Type: image/jpeg
+
+< ./tire.jpg
+--tire-boundary--
+
+### Update a tire, keeping its existing image
 PUT {{api_HostAddress}}/tires/1
-Content-Type: application/json
+Content-Type: multipart/form-data; boundary=tire-boundary
 
-{
-  "brand": "Continental",
-  "type": "Winter",
-  "rimDiameter": 18,
-  "price": 159.50,
-  "imageUrl": "https://example.com/continental.png"
-}
+--tire-boundary
+Content-Disposition: form-data; name="brand"
 
+Continental
+--tire-boundary
+Content-Disposition: form-data; name="type"
+
+Winter
+--tire-boundary
+Content-Disposition: form-data; name="rimDiameter"
+
+18
+--tire-boundary
+Content-Disposition: form-data; name="price"
+
+159.50
+--tire-boundary--
 ### Delete a tire
 DELETE {{api_HostAddress}}/tires/1

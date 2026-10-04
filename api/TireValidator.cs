@@ -22,12 +22,6 @@ public static class TireValidator
         else if (decimal.Round(tire.Price, 2) != tire.Price)
             errors["Price"] = ["Price can have at most 2 decimal places."];
 
-        if (string.IsNullOrWhiteSpace(tire.ImageUrl))
-            errors["ImageUrl"] = ["ImageUrl is required."];
-        else if (!Uri.TryCreate(tire.ImageUrl, UriKind.Absolute, out var uri) ||
-                 (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
-            errors["ImageUrl"] = ["ImageUrl must be a valid absolute http(s) URL."];
-
         return errors;
     }
 }

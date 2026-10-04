@@ -46,23 +46,27 @@ async function onSubmitForm(event) {
   event.preventDefault();
   clearMessage();
 
-  const tire = {
-    brand: document.getElementById("brand").value.trim(),
-    type: document.getElementById("type").value,
-    rimDiameter: Number(document.getElementById("rimDiameter").value),
-    price: Number(document.getElementById("price").value),
-    imageUrl: document.getElementById("imageUrl").value.trim(),
-  };
-
+  const imageInput = document.getElementById("image");
+  const image = imageInput.files[0];
+  if (image && image.size > 5 * 1024 * 1024) {
+    showMessage("Choose an image no larger than 5 MB.");
+    return;
+  }
+  const tire = new FormData();
+  tire.append("brand", document.getElementById("brand").value.trim());
+  tire.append("type", document.getElementById("type").value);
+  tire.append("rimDiameter", document.getElementById("rimDiameter").value);
+  tire.append("price", document.getElementById("price").value);
+  if (image) tire.append("image", image);
   const isEdit = editingId !== null;
   const url = isEdit ? `${API_BASE}/tires/${editingId}` : `${API_BASE}/tires`;
   const method = isEdit ? "PUT" : "POST";
 
+  submitButton.disabled = true;
   try {
     const response = await fetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(tire),
+      body: tire,
     });
 
     if (!response.ok) {
@@ -75,6 +79,8 @@ async function onSubmitForm(event) {
     showMessage(isEdit ? "Tire updated." : "Tire created.");
   } catch {
     showMessage("Request failed. Is the API running?");
+  } finally {
+    submitButton.disabled = false;
   }
 }
 
@@ -107,7 +113,9 @@ function startEdit(id) {
   document.getElementById("type").value = tire.type ?? "";
   document.getElementById("rimDiameter").value = tire.rimDiameter;
   document.getElementById("price").value = tire.price;
-  document.getElementById("imageUrl").value = tire.imageUrl ?? "";
+  document.getElementById("image").value = "";
+  document.getElementById("image").required = false;
+  document.getElementById("image-help").textContent = "Leave empty to keep the current image, or choose a replacement (max 5 MB).";
 
   formTitleEl.textContent = "Edit tire #" + tire.id;
   submitButton.textContent = "Save";
@@ -118,6 +126,8 @@ function startEdit(id) {
 function cancelEdit() {
   editingId = null;
   formEl.reset();
+  document.getElementById("image").required = true;
+  document.getElementById("image-help").textContent = "JPEG, PNG, or WebP; max 5 MB.";
   formTitleEl.textContent = "Add a tire";
   submitButton.textContent = "Add";
   cancelButton.hidden = true;
