@@ -266,4 +266,4 @@ flowchart LR
 - [x] Add a background process
 - [x] Make data validation in create and put operations (string, enum, int, decimal, plus image validation)
 - [x] Host app on PaaS
-- [x] Make architectural drawing
+- [ ] Make architectural drawing
