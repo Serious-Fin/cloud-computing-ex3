@@ -4,7 +4,7 @@ public static class TireForm
 {
     public static Tire Read(IFormCollection form, Dictionary<string, string[]> errors)
     {
-        var tire = new Tire { Brand = form["brand"].ToString() };
+        var tire = new Tire { Brand = form["brand"].ToString().Trim() };
         if (Enum.TryParse<TireType>(form["type"], true, out var type) && Enum.IsDefined(type))
             tire.Type = type;
         if (int.TryParse(form["rimDiameter"], NumberStyles.Integer, CultureInfo.InvariantCulture, out var rim))

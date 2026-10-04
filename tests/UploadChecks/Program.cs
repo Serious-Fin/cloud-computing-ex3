@@ -22,6 +22,14 @@ var fields = new Dictionary<string, StringValues>
 var errors = new Dictionary<string, string[]>();
 var tire = TireForm.Read(new FormCollection(fields), errors);
 Check(errors.Count == 0 && tire.Price == 129.99m && tire.Type == TireType.Winter, "Parse valid multipart fields");
+fields["brand"] = new string(' ', 60) + "Michelin" + new string(' ', 60);
+errors.Clear();
+tire = TireForm.Read(new FormCollection(fields), errors);
+Check(errors.Count == 0 && tire.Brand == "Michelin", "Normalize padded brands before validation and persistence");
+fields["brand"] = new string('a', 51);
+errors.Clear();
+TireForm.Read(new FormCollection(fields), errors);
+Check(errors.ContainsKey("Brand"), "Reject brands exceeding the database length limit");
 fields["rimDiameter"] = "17.5";
 fields["price"] = "1,000";
 fields["type"] = "999";

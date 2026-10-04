@@ -205,8 +205,8 @@ async function showApiErrors(response) {
     }
     errorsEl.textContent = lines.join("\n");
     showMessage("The API rejected the input.");
-  } else if (problem && problem.title) {
-    showMessage(problem.title);
+  } else if (problem && (problem.detail || problem.title)) {
+    showMessage(problem.detail || problem.title);
   } else if (text) {
     // Keep only the first line so a server stack trace is not dumped on the page.
     showMessage("Request failed (HTTP " + response.status + "): " + text.split("\n")[0].slice(0, 200));

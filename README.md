@@ -1,5 +1,10 @@
 # cloud-computing-ex3
 
+## Live application
+
+- [Web application](https://cloud-computing-ex3-web.onrender.com)
+- [Public API: list tires](https://cloud-computing-ex3-api.onrender.com/tires)
+
 ## Exercise
 
 Make an application with CRUD (Create, Read, Update Delete + list data) functionality of any kind of entities on any PaaS. Create and update functions should check input of at least 4 different data types. Application should contain web application, public API, database for persistence, file storage and some background operation. Make a small architectural drawing.
@@ -91,8 +96,9 @@ The EF tools build the project and use the `Development` environment by default,
 
 ## Deploying to Render
 
-`render.yaml` is a Render Blueprint that defines the whole stack, so a single push is all
-the setup needed:
+`render.yaml` is a Render Blueprint that defines the Render frontend, API, and database.
+Apply the Blueprint after pushing the repository, and configure the Cloudflare R2
+bucket and API credentials separately as described below:
 
 | Resource | Type | Plan |
 | --- | --- | --- |
@@ -249,6 +255,10 @@ public uploads; access control would be needed before opening it beyond the demo
 
 ## Architecture
 
+![Application architecture](architexture.png)
+
+See [the detailed architecture and explanation](docs/architecture.md).
+
 ```mermaid
 flowchart LR
     Browser[Browser] --> Web[Render static frontend]
@@ -266,4 +276,4 @@ flowchart LR
 - [x] Add a background process
 - [x] Make data validation in create and put operations (string, enum, int, decimal, plus image validation)
 - [x] Host app on PaaS
-- [ ] Make architectural drawing
+- [x] Make architectural drawing

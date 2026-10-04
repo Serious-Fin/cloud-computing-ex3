@@ -46,5 +46,15 @@ vm.runInContext('loadTires = async () => {};', context);
   assert.ok(requests[1].url.endsWith('/tires/42'));
   assert.equal(requests[1].body.has('image'), false, 'Editing without a file preserves the image');
   assert.equal(document.getElementById('submit-button').disabled, false);
+  await context.showApiErrors({
+    status: 503,
+    text: async () => JSON.stringify({ title: 'Service Unavailable', detail: 'Image storage is not configured.' }),
+  });
+  assert.equal(document.getElementById('message').textContent, 'Image storage is not configured.');
+  await context.showApiErrors({
+    status: 503,
+    text: async () => JSON.stringify({ title: 'Service Unavailable' }),
+  });
+  assert.equal(document.getElementById('message').textContent, 'Service Unavailable');
   console.log('Frontend multipart upload checks passed.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
