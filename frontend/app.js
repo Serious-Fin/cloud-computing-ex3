@@ -6,7 +6,6 @@ const API_BASE =
     ? "http://localhost:5016"
     : "https://cloud-computing-ex3-api.onrender.com";
 
-const apiBaseSpan = document.getElementById("api-base");
 const messageEl = document.getElementById("message");
 const errorsEl = document.getElementById("errors");
 const formEl = document.getElementById("tire-form");
@@ -19,7 +18,6 @@ const tableBody = document.getElementById("tire-table-body");
 let tires = [];
 let editingId = null;
 
-apiBaseSpan.textContent = API_BASE;
 formEl.addEventListener("submit", onSubmitForm);
 cancelButton.addEventListener("click", cancelEdit);
 refreshButton.addEventListener("click", loadTires);
