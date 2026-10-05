@@ -9,6 +9,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <Compile Include="../../api/ImageUpload.cs" Link="ImageUpload.cs" />
     <Compile Include="../../api/TireForm.cs" Link="TireForm.cs" />
+    <Compile Include="../../api/TireJson.cs" Link="TireJson.cs" />
     <Compile Include="../../api/Tire.cs" Link="Tire.cs" />
     <Compile Include="../../api/TireValidator.cs" Link="TireValidator.cs" />
     <Using Include="Microsoft.AspNetCore.Http" />

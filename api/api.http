@@ -8,7 +8,30 @@ Accept: application/json
 GET {{api_HostAddress}}/tires/1
 Accept: application/json
 
-### Create a tire (place a JPEG at api/tire.jpg before sending)
+### Create a tire with an image link (Insomnia: Body > JSON)
+POST {{api_HostAddress}}/tires
+Content-Type: application/json
+
+{
+  "brand": "Michelin",
+  "type": "AllSeason",
+  "rimDiameter": 17,
+  "price": 129.99,
+  "imageUrl": "https://example.com/tire.jpg"
+}
+
+### Update a tire with JSON, keeping its existing image
+PUT {{api_HostAddress}}/tires/1
+Content-Type: application/json
+
+{
+  "brand": "Continental",
+  "type": "Winter",
+  "rimDiameter": 18,
+  "price": 159.50
+}
+
+### Create a tire with an uploaded file (place a JPEG at api/tire.jpg before sending)
 POST {{api_HostAddress}}/tires
 Content-Type: multipart/form-data; boundary=tire-boundary
 

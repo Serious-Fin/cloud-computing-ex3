@@ -68,14 +68,14 @@ app.MapPost("/tires", (HttpRequest request, ApiDb db, R2Storage storage,
     ILoggerFactory loggerFactory, IConfiguration configuration, CancellationToken cancellationToken) =>
     TireUploadEndpoints.SaveAsync(null, request, db, storage, loggerFactory, configuration, cancellationToken))
     .RequireRateLimiting("tire-writes")
-    .Accepts<IFormFile>("multipart/form-data")
+    .Accepts<Tire>("application/json", "multipart/form-data")
     .ProducesValidationProblem();
 
 app.MapPut("/tires/{id}", (int id, HttpRequest request, ApiDb db, R2Storage storage,
     ILoggerFactory loggerFactory, IConfiguration configuration, CancellationToken cancellationToken) =>
     TireUploadEndpoints.SaveAsync(id, request, db, storage, loggerFactory, configuration, cancellationToken))
     .RequireRateLimiting("tire-writes")
-    .Accepts<IFormFile>("multipart/form-data")
+    .Accepts<Tire>("application/json", "multipart/form-data")
     .ProducesValidationProblem();
 app.MapDelete("/tires/{id}", async (int id, ApiDb db, R2Storage storage) =>
 {

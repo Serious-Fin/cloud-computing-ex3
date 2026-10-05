@@ -9,11 +9,18 @@ internal static class TireUploadEndpoints
         if (!configuration.GetValue("Uploads:Enabled", true))
             return Results.Problem("Uploads are disabled for this demo.", statusCode: 503);
 
-        if (request.ContentType is null || !request.ContentType.StartsWith("multipart/form-data", StringComparison.OrdinalIgnoreCase))
-            return Results.Problem("Send tire fields and an image as multipart/form-data.", statusCode: 415);
+        var isJson = request.HasJsonContentType();
+        if (!isJson && !request.HasFormContentType)
+            return Results.Problem("Send application/json with imageUrl, or multipart/form-data with an image file.", statusCode: 415);
 
-        IFormCollection form;
-        try { form = await request.ReadFormAsync(cancellationToken); }
+        IFormCollection? form = null;
+        Tire? jsonInput = null;
+        try
+        {
+            if (isJson) jsonInput = await TireJson.ReadAsync(request, cancellationToken);
+            else form = await request.ReadFormAsync(cancellationToken);
+        }
+        catch (System.Text.Json.JsonException) { return Results.Problem("Invalid JSON body or field types.", statusCode: 400); }
         catch (InvalidDataException) { return Results.Problem("Invalid or oversized upload.", statusCode: 400); }
         catch (BadHttpRequestException exception)
         {
@@ -23,17 +30,23 @@ internal static class TireUploadEndpoints
         var existing = id.HasValue ? await db.Tires.FindAsync([id.Value], cancellationToken) : null;
         if (id.HasValue && existing is null) return Results.NotFound();
         var errors = new Dictionary<string, string[]>();
-        var input = TireForm.Read(form, errors);
-        var image = form.Files.GetFile("image");
+        if (isJson && jsonInput is null) return Results.Problem("A JSON object is required.", statusCode: 400);
+        var input = isJson ? jsonInput! : TireForm.Read(form!, errors);
+        if (isJson)
+        {
+            foreach (var error in TireValidator.Validate(input)) errors.TryAdd(error.Key, error.Value);
+            TireJson.ValidateImageUrl(input.ImageUrl, !string.IsNullOrWhiteSpace(existing?.ImageUrl), errors);
+        }
+        var image = form?.Files.GetFile("image");
         string? extension = null;
-        if (form.Files.Count > 1 || (form.Files.Count == 1 && image is null))
+        if (form is not null && (form.Files.Count > 1 || (form.Files.Count == 1 && image is null)))
             errors["Image"] = ["Upload one file in the image field."];
         else if (image is not null)
         {
             extension = await ImageUpload.ValidateAsync(image, cancellationToken);
             if (extension is null) errors["Image"] = ["Choose a JPEG, PNG, or WebP image between 1 byte and 5 MB."];
         }
-        else if (existing is null || string.IsNullOrWhiteSpace(existing.ImageUrl))
+        else if (!isJson && (existing is null || string.IsNullOrWhiteSpace(existing.ImageUrl)))
             errors["Image"] = ["An image is required."];
         if (errors.Count > 0) return Results.ValidationProblem(errors);
 
@@ -64,7 +77,7 @@ internal static class TireUploadEndpoints
             tire.Type = input.Type;
             tire.RimDiameter = input.RimDiameter;
             tire.Price = input.Price;
-            if (newKey is not null)
+            if (newKey is not null || (isJson && input.ImageUrl is not null && input.ImageUrl != existing.ImageUrl))
             {
                 tire.ImageUrl = input.ImageUrl;
                 tire.ImageKey = newKey;
@@ -76,7 +89,7 @@ internal static class TireUploadEndpoints
             await storage.DeleteBestEffortAsync(newKey);
             throw;
         }
-        if (newKey is not null) await storage.DeleteBestEffortAsync(oldKey);
+        if (oldKey != tire.ImageKey) await storage.DeleteBestEffortAsync(oldKey);
         return existing is null ? Results.Created($"/tires/{tire.Id}", tire) : Results.NoContent();
     }
 }
