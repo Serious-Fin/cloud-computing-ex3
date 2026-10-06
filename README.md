@@ -174,30 +174,29 @@ A Free Postgres instance holds 1 GB and has no backups. `fromDatabase` with
 
 ## Background operation
 
-`api/TireViewsWorker.cs` is an ASP.NET Core `BackgroundService` hosted inside the
-API. It replaces each tire's simulated last-hour view count with a random number
-from 0 to 50 on startup and every 60 minutes, saving the count and UTC update time
-in PostgreSQL. The frontend shows these statistics; press **Refresh** to fetch
-the latest values. These are demo statistics, not actual visitor tracking or a
-rolling one-hour measurement. New tires show **Pending update** until the next run.
+The background operation is a **separately hosted Cloudflare Worker** in
+`worker/`. Cloudflare invokes it hourly using a Cron Trigger. It connects directly
+to Render PostgreSQL through Hyperdrive and replaces each tire's simulated
+last-hour views with a random integer from 0 to 50 plus a UTC update timestamp.
+It runs independently of the API, including while the free API sleeps.
 
-The database migration is applied automatically on API startup. No additional
-Render service is needed. The worker pauses when the free API sleeps and runs
-again when it wakes. Each run logs the number of updated tires; failures are
-logged and retried at the next interval.
+These are demo statistics, not actual visitor tracking or a rolling one-hour
+measurement. New tires show **Pending update** until the next scheduled run.
+The frontend shows persisted statistics when refreshed.
 
-For a lecture demo, set the Render environment variable
-`TireViews__IntervalMinutes` to `1` (or change `TireViews:IntervalMinutes` in
-`api/appsettings.json` locally). Restart/redeploy after changing it. The interval
-must be between 0.01 and 1440 minutes; the default is 60. Keep the page active and
-press **Refresh** after a minute to see the persisted update.
+Follow [the Cloudflare worker deployment guide](worker/README.md) to create
+Hyperdrive, set its configuration ID, and deploy the worker. The Render Blueprint
+creates only the Render resources; it does not deploy the Cloudflare Worker.
+The API still owns database migrations. No new schema migration is needed.
+For a one-minute demo, change the worker's cron schedule and redeploy as described
+in the guide. The old API `TireViews__IntervalMinutes` setting is no longer used.
 
 ## File storage: Cloudflare R2
 
 Images are uploaded by the API to R2 Standard storage. PostgreSQL stores the public
 `ImageUrl` and an internal `ImageKey` for cleanup. Browser credentials are never
 needed: the browser sends multipart form data to Render, and the API uploads to R2
-using its S3-compatible API. No R2 Worker, server, or R2 YAML deployment is needed.
+using its S3-compatible API. R2 storage itself requires no compute service; the separate views Worker is unrelated to image uploads.
 The Render Blueprint only configures the API; it does not create Cloudflare resources.
 
 ### One-time Cloudflare setup
@@ -280,7 +279,7 @@ public uploads; access control would be needed before opening it beyond the demo
 
 ## Architecture
 
-![Application architecture](architexture.png)
+![Application architecture](docs/architecture.svg)
 
 See [the detailed architecture and explanation](docs/architecture.md).
 
@@ -291,14 +290,16 @@ flowchart LR
     API -->|Tire data and image URL/key| DB[(Render PostgreSQL)]
     API -->|Authenticated upload/delete| R2[(Cloudflare R2)]
     Browser -->|Public image URL| R2
-    Worker[BackgroundService inside API] -->|Update simulated views| DB
+    Cron[Cloudflare Cron Trigger] --> Worker[Cloudflare Worker]
+    Worker --> Hyperdrive[Cloudflare Hyperdrive]
+    Hyperdrive -->|External PostgreSQL connection with TLS| DB
 ```
 ## To-Do
 - [x] Create API
 - [x] Create frontend
 - [x] Save data in DB
 - [x] Save files in file storage (R2 integration; configure the bucket before deployment)
-- [x] Add a background process
+- [x] Implement a separate Cloudflare background worker (deploy using worker/README.md)
 - [x] Make data validation in create and put operations (string, enum, int, decimal, plus image validation)
 - [x] Host app on PaaS
 - [x] Make architectural drawing

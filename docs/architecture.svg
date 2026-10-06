@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620">
+  <title>Tire application cloud architecture</title>
+  <desc>The browser uses the Render frontend and API and loads images from R2. A separate Cloudflare scheduled Worker updates Render PostgreSQL through Hyperdrive.</desc>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker></defs>
+  <rect width="1100" height="620" fill="#fff"/>
+  <g font-family="Arial, sans-serif" fill="#0f172a">
+    <text x="40" y="42" font-size="25" font-weight="bold">Tire application — separate background operation</text>
+    <rect x="330" y="70" width="340" height="510" rx="16" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="350" y="102" font-size="20" font-weight="bold">Render · Frankfurt</text>
+    <rect x="710" y="70" width="350" height="510" rx="16" fill="#fff7ed" stroke="#fdba74"/>
+    <text x="730" y="102" font-size="20" font-weight="bold">Cloudflare</text>
+    <g stroke="#475569" fill="none" stroke-width="2" marker-end="url(#arrow)">
+      <path d="M350 165H260V257"/>
+      <path d="M280 290H350"/>
+      <path d="M495 335V445"/>
+      <path d="M640 295H730"/>
+      <path d="M730 310H685V395H185V335"/>
+      <path d="M875 440V462"/>
+      <path d="M835 508H815"/>
+      <path d="M730 510H640"/>
+    </g>
+    <g font-size="14">
+      <text x="80" y="170">Page and assets</text><text x="80" y="245">CRUD + image upload</text>
+      <text x="505" y="380">Internal DB</text><text x="670" y="277">S3 upload/delete</text>
+      <text x="390" y="419">Public image delivery</text><text x="646" y="493">TLS</text>
+    </g>
+    <g stroke="#64748b">
+      <rect x="60" y="260" width="220" height="75" rx="10" fill="#f1f5f9"/>
+      <rect x="350" y="130" width="290" height="75" rx="10" fill="#dbeafe"/>
+      <rect x="350" y="260" width="290" height="75" rx="10" fill="#dbeafe"/>
+      <rect x="350" y="445" width="290" height="100" rx="10" fill="#dcfce7"/>
+      <rect x="730" y="260" width="310" height="75" rx="10" fill="#dcfce7"/>
+      <rect x="730" y="365" width="310" height="75" rx="10" fill="#fef3c7"/>
+      <rect x="835" y="465" width="205" height="80" rx="10" fill="#fef3c7"/>
+      <rect x="730" y="465" width="85" height="80" rx="10" fill="#fef3c7"/>
+    </g>
+    <g text-anchor="middle" font-size="18" font-weight="bold">
+      <text x="170" y="294">Browser</text><text x="495" y="160">Static frontend</text>
+      <text x="495" y="292">ASP.NET Core API</text><text x="495" y="477">PostgreSQL</text>
+      <text x="885" y="292">R2 image storage</text><text x="885" y="397">Cron Trigger</text>
+      <text x="937" y="498">Scheduled Worker</text>
+      <text x="772" y="503" font-size="13">Hyperdrive</text>
+    </g>
+    <g text-anchor="middle" font-size="14">
+      <text x="170" y="316">Runs the web application</text><text x="495" y="185">HTML · CSS · JavaScript</text>
+      <text x="495" y="317">Public REST endpoints · validation</text><text x="495" y="502">Tires · image URLs and keys</text>
+      <text x="495" y="525">Simulated views · update timestamps</text><text x="885" y="317">Public URLs · authenticated writes</text>
+      <text x="885" y="423">Hourly UTC schedule</text><text x="937" y="523">Updates view statistics</text>
+    </g>
+    <text x="40" y="607" font-size="14" fill="#475569">The scheduled Worker has its own lifecycle and runs while the API sleeps. No public Worker endpoint is needed.</text>
+  </g>
+</svg>

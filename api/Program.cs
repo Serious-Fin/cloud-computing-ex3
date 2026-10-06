@@ -26,13 +26,6 @@ builder.Services.AddRateLimiter(options =>
 });
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 6 * 1024 * 1024);
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options => options.MultipartBodyLengthLimit = 6 * 1024 * 1024);
-builder.Services.AddOptions<TireViewsOptions>()
-    .BindConfiguration("TireViews")
-    .Validate(options => double.IsFinite(options.IntervalMinutes) &&
-        options.IntervalMinutes >= 0.01 && options.IntervalMinutes <= 1440,
-        "TireViews:IntervalMinutes must be between 0.01 and 1440.")
-    .ValidateOnStart();
-builder.Services.AddHostedService<TireViewsWorker>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>

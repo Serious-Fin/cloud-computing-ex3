@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cloud-computing-ex3-tire-views",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-06",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "triggers": { "crons": ["0 * * * *"] },
+  "observability": { "enabled": true },
+  "hyperdrive": [{
+    "binding": "HYPERDRIVE",
+    // Replace with the ID of the Hyperdrive configuration you create in Cloudflare.
+    // This ID is not a credential. Database credentials remain in Hyperdrive.
+    "id": "00000000000000000000000000000000",
+    "localConnectionString": "postgres://postgres:postgres@localhost:5433/tires"
+  }]
+}
