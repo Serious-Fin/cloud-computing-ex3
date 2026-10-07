@@ -303,3 +303,8 @@ flowchart LR
 - [x] Make data validation in create and put operations (string, enum, int, decimal, plus image validation)
 - [x] Host app on PaaS
 - [x] Make architectural drawing
+
+## Links
+
+Render - https://dashboard.render.com/
+CloudFlare - https://dash.cloudflare.com/

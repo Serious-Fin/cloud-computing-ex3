@@ -12,7 +12,7 @@
     "binding": "HYPERDRIVE",
     // Replace with the ID of the Hyperdrive configuration you create in Cloudflare.
     // This ID is not a credential. Database credentials remain in Hyperdrive.
-    "id": "00000000000000000000000000000000",
+    "id": "7c98debaa0334b85b5421971635b58f4",
     "localConnectionString": "postgres://postgres:postgres@localhost:5433/tires"
   }]
 }
