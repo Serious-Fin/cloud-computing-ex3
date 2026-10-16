@@ -5,6 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@11.19.0",
   "scripts": {
+    "start": "node src/run-job.js",
     "dev": "wrangler dev --test-scheduled",
     "deploy": "wrangler deploy",
     "build": "wrangler deploy --dry-run --outdir dist",

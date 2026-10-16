@@ -1,0 +1,7 @@
+**
+!worker/
+!worker/package.json
+!worker/pnpm-lock.yaml
+!worker/pnpm-workspace.yaml
+!worker/src/
+!worker/src/**
