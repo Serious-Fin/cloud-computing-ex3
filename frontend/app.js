@@ -1,10 +1,11 @@
-// Update the deployed URL if Render assigns a different API hostname.
+// The container supplies runtime configuration; direct/static hosting keeps its defaults.
 const API_BASE =
+  globalThis.APP_CONFIG?.apiBaseUrl || (
   location.protocol === "file:" ||
   location.hostname === "localhost" ||
   location.hostname === "127.0.0.1"
     ? "http://localhost:5016"
-    : "https://cloud-computing-ex3-api.onrender.com";
+    : "https://cloud-computing-ex3-api.onrender.com");
 
 const messageEl = document.getElementById("message");
 const errorsEl = document.getElementById("errors");

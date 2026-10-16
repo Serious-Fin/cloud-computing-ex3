@@ -1,0 +1,6 @@
+**
+!frontend/
+!frontend/index.html
+!frontend/styles.css
+!frontend/app.js
+!frontend/server.mjs
