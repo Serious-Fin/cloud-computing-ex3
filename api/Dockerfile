@@ -1,4 +1,4 @@
-# Build stage. The build context is the repository root (see render.yaml).
+# Build stage. The build context is the repository root.
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
