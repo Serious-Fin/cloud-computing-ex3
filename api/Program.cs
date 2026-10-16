@@ -11,7 +11,7 @@ builder.Services.AddDbContext<ApiDb>(opt =>
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
-builder.Services.AddSingleton<R2Storage>();
+builder.Services.AddSingleton<SupabaseStorage>();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -57,20 +57,20 @@ app.MapGet("/tires/{id}", async (int id, ApiDb db) =>
             ? Results.Ok(tire)
             : Results.NotFound());
 
-app.MapPost("/tires", (HttpRequest request, ApiDb db, R2Storage storage,
+app.MapPost("/tires", (HttpRequest request, ApiDb db, SupabaseStorage storage,
     ILoggerFactory loggerFactory, IConfiguration configuration, CancellationToken cancellationToken) =>
     TireUploadEndpoints.SaveAsync(null, request, db, storage, loggerFactory, configuration, cancellationToken))
     .RequireRateLimiting("tire-writes")
     .Accepts<Tire>("application/json", "multipart/form-data")
     .ProducesValidationProblem();
 
-app.MapPut("/tires/{id}", (int id, HttpRequest request, ApiDb db, R2Storage storage,
+app.MapPut("/tires/{id}", (int id, HttpRequest request, ApiDb db, SupabaseStorage storage,
     ILoggerFactory loggerFactory, IConfiguration configuration, CancellationToken cancellationToken) =>
     TireUploadEndpoints.SaveAsync(id, request, db, storage, loggerFactory, configuration, cancellationToken))
     .RequireRateLimiting("tire-writes")
     .Accepts<Tire>("application/json", "multipart/form-data")
     .ProducesValidationProblem();
-app.MapDelete("/tires/{id}", async (int id, ApiDb db, R2Storage storage) =>
+app.MapDelete("/tires/{id}", async (int id, ApiDb db, SupabaseStorage storage) =>
 {
     if (await db.Tires.FindAsync(id) is Tire tire)
     {

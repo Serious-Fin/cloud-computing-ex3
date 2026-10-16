@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 internal static class TireUploadEndpoints
 {
     public static async Task<IResult> SaveAsync(int? id, HttpRequest request, ApiDb db,
-        R2Storage storage, ILoggerFactory loggerFactory, IConfiguration configuration,
+        SupabaseStorage storage, ILoggerFactory loggerFactory, IConfiguration configuration,
         CancellationToken cancellationToken)
     {
         if (!configuration.GetValue("Uploads:Enabled", true))
@@ -53,7 +53,7 @@ internal static class TireUploadEndpoints
         string? newKey = null;
         if (image is not null)
         {
-            if (!storage.IsConfigured) return Results.Problem("Image storage is not configured. Set the R2 environment variables on the API.", statusCode: 503);
+            if (!storage.IsConfigured) return Results.Problem("Image storage is not configured. Set the Supabase environment variables on the API.", statusCode: 503);
             try
             {
                 var uploaded = await storage.UploadAsync(image, extension!, cancellationToken);
@@ -63,7 +63,7 @@ internal static class TireUploadEndpoints
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
-                loggerFactory.CreateLogger("TireUpload").LogError(exception, "R2 image upload failed.");
+                loggerFactory.CreateLogger("TireUpload").LogError(exception, "Supabase image upload failed.");
                 return Results.Problem("Image upload failed. Please try again.", statusCode: 503);
             }
         }
